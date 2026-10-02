@@ -1,0 +1,42 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build.yml'
+      - 'KuyrukAlarm_AndroidStudio_Projesi.zip'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository indir
+        uses: actions/checkout@v4
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle indir
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          unzip -q gradle-8.11.1-bin.zip
+
+      - name: Android projesini ZIP'ten çıkar
+        run: |
+          mkdir project
+          unzip -q KuyrukAlarm_AndroidStudio_Projesi.zip -d project
+
+      - name: APK oluştur
+        run: |
+          ./gradle-8.11.1/bin/gradle -p project assembleDebug --no-daemon
+
+      - name: APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: KuyrukAlarm-APK
+          path: project/app/build/outputs/apk/debug/app-debug.apk
